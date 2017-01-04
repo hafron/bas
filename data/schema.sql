@@ -1,0 +1,21 @@
+CREATE TABLE users (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "user" TEXT UNIQUE NOT NULL,
+    "password_hash" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "mail" TEXT NOT NULL,
+	"global_perms" INTEGER NOT NULL DEFAULT (0)
+);
+
+CREATE TABLE "domains" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "domain" TEXT NOT NULL
+);
+
+CREATE TABLE "groups" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "user" INTEGER NOT NULL,
+    "domain" INTEGER NOT NULL,
+    "group_name" TEXT NOT NULL,
+    "blocked" INTEGER NOT NULL DEFAULT (0)
+);
