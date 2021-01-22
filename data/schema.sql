@@ -1,9 +1,11 @@
 CREATE TABLE users (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     "user" TEXT UNIQUE NOT NULL,
-    "password_hash" TEXT NOT NULL,
+    "pass" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "mail" TEXT NOT NULL,
+    "phone" TEXT NULL,
+    "avatar" BLOB NULL,
 	"global_perms" INTEGER NOT NULL DEFAULT (0)
 );
 

@@ -6,7 +6,7 @@ class BasAPI extends API
 {
     private $Model;
     
-    private $domain, $user, $password_hash;
+    private $domain, $user, $pass;
 
     public function __construct($request, $origin) {
         parent::__construct($request);
@@ -22,14 +22,14 @@ class BasAPI extends API
         
         $this->domain = $_SERVER['HTTP_ORIGIN'];
         $this->user = $token[0];
-        $this->password_hash = $token[1];
+        $this->pass = $token[1];
         		
         $this->Model = new Model($this->domain);
         if (!$this->Model->groups->exists($this->user)) {
 			throw new Exception('User not registered in the origin domain.');
 		}
 		
-		if (!$this->Model->users->checkPass($this->user, $this->password_hash)) {
+		if (!$this->Model->users->checkPass($this->user, $this->pass)) {
 			throw new Exception('Invalid user name or password.');
 		}
     }
@@ -126,14 +126,14 @@ class BasAPI extends API
 			}
 		
 			$user = $this->getFromRequest('user');
-			$password_hash = $this->getFromRequest('password_hash');
+			$pass = $this->getFromRequest('pass');
 			$name = $this->getFromRequest('name');
 			$mail = $this->getFromRequest('mail');
 			$grps = $this->getFromRequest('grps');
 
 			$this->Model->db->beginTransaction();
 			try {
-				$this->Model->users->add($user, $password_hash, $name, $mail);
+				$this->Model->users->add($user, $pass, $name, $mail);
 				$this->Model->groups->add_user($user, $grps);
 				
 				$this->Model->db->commit();
@@ -159,10 +159,10 @@ class BasAPI extends API
 				throw new Exception('update user: user protected');
 			}
 			
-			$data_keys = array('user', 'password_hash', 'name', 'mail');
+			$data_keys = array('user', 'pass', 'name', 'mail');
 			$data = array();
 			$grps = '';
-			
+	
 			foreach ($this->request as $key => $value) {
 				if ($key === 'grps') {
 					$grps = $value;

@@ -3,13 +3,13 @@
 require_once 'Factory.php';
 class Users extends Factory
 {
-	private $fields = array('id', 'user', 'password_hash', 'name', 'mail', 'global_perms');
+	private $fields = array('id', 'user', 'pass', 'name', 'mail', 'global_perms');
 	
-	public function checkPass($user, $password_hash) {
+	public function checkPass($user, $pass) {
 		$sth = $this->db->prepare('SELECT COUNT(*)
-			FROM users WHERE user = :user AND password_hash = :password_hash');
+			FROM users WHERE user = :user AND pass = :pass');
 		
-		$sth->execute(array(':user' => $user, ':password_hash' => $password_hash));
+		$sth->execute(array(':user' => $user, ':pass' => $pass));
 		$numrows = $sth->fetchColumn();
 		if ($numrows > 0) {
 			return true;
@@ -98,11 +98,11 @@ class Users extends Factory
 		return $sth->fetchAll();
 	}
 	
-	public function add($user, $password_hash, $name, $mail) {
-		$sth = $this->db->prepare('INSERT INTO users (user, password_hash, name, mail) VALUES (:user, :password_hash, :name, :mail)');
+	public function add($user, $pass, $name, $mail) {
+		$sth = $this->db->prepare('INSERT INTO users (user, pass, name, mail) VALUES (:user, :pass, :name, :mail)');
 		
 		return $sth->execute(array(':user' => $user,
-							':password_hash' => $password_hash,
+							':pass' => $pass,
 							':name' => $name,
 							':mail' => $mail));
 	}
@@ -126,14 +126,22 @@ class Users extends Factory
 		$update_query = array();
 		$execute_values = array();
 		foreach ($data as $key => $value) {
-			$update_query[] = $key.'=:'.$key;
-			$execute_values[':'.$key] = $value;
+			if (in_array($key, $this->fields)) {
+				$update_query[] = $key.'=:'.$key;
+				$execute_values[':'.$key] = $value;
+			}
 		}
-		$execute_values[':old_user'] = $user;
-		$sth = $this->db->prepare('UPDATE users SET
-								'.implode(',', $update_query).'
-								WHERE user=:old_user');
+		//nothing to update
+		if (count($update_query) === 0) {
+			return true;
+		}
 		
+		$execute_values[':old_user'] = $user;
+		$q = 'UPDATE users SET
+								'.implode(',', $update_query).'
+								WHERE user=:old_user';
+								
+		$sth = $this->db->prepare($q);
 		return $sth->execute($execute_values);
 	}
 }
